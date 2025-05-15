@@ -11,6 +11,13 @@ import re
 import os
 import json
 import streamlit as st
+import sys
+
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+    return os.path.join(base_path, relative_path)
 
 # counter for duplicate / records that already exists
 counter = 0
@@ -18,7 +25,7 @@ counter = 0
 # date_str = yesterday.strftime("%m/%d/%Y")
 global date_str 
 def get_db_connection():
-    load_dotenv()
+    load_dotenv(resource_path('.env'))
     conn = mysql.connector.connect(
         host=os.getenv("MYSQL_HOST"),
         port=int(os.getenv("MYSQL_PORT")),
@@ -194,11 +201,11 @@ def process_csv(file_path):
     df_cleaned['punch_in_user_time'] = df_cleaned['InTime'].apply(combine_datetime)
     df_cleaned['punch_out_user_time'] = df_cleaned['OutTime'].apply(combine_datetime)
 
+    mapping_file = resource_path('data/mapping.json')
     #Load the staff mapping JSON file
-    with open("data/mapping.json", 'r') as f:
+    with open(mapping_file, 'r') as f:
         staff_mapping = json.load(f)
-    # Convert JSON keys to integers
-    # Convert JSON keys to integers and extract only employee_number
+
     staff_no_to_emp_number = {
         int(float(staff_no)): details["employee_number"]
         for staff_no, details in staff_mapping.items()

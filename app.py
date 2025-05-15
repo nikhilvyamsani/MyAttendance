@@ -1,10 +1,16 @@
 import streamlit as st
 import os
 import glob
+import sys
 import pandas as pd
 from datetime import date
 import final as backend
 import json
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+    return os.path.join(base_path, relative_path)
 
 # Process single or multiple files
 def process_files(file_paths):
@@ -158,7 +164,7 @@ if 'fetch' in locals() and fetch:
             file_name=f"attendance_{date_str}.csv",
             mime="text/csv"
         )
-        mapping_file = 'data/mapping.json'
+        mapping_file = resource_path('data/mapping.json')
 
         # Check for employees who did not punch in
         missing_df = check_for_punch_in(df, mapping_file)
