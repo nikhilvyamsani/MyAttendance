@@ -154,20 +154,6 @@ def insert_data_to_db(df):
     conn.close()
     print("✅ All attendance data inserted successfully ")
 
-# def extract_records(date_str):
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
-#     query = """
-#     SELECT * FROM ohrm_attendance_record
-#     WHERE DATE(punch_in_utc_time) = %s
-#     """
-#     cursor.execute(query, (date_str,))
-#     columns = [desc[0] for desc in cursor.description]
-#     records = cursor.fetchall()
-#     conn.close()
-#     return pd.DataFrame(records, columns=columns)
-
-
 def process_csv(file_path):
 
     global date_str
