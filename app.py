@@ -1,4 +1,4 @@
-import streamit as st
+import streamlit as st
 import os
 import glob
 import sys
