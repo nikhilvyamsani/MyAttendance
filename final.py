@@ -14,6 +14,8 @@ import streamlit as st
 import sys
 
 
+
+
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and PyInstaller """
     base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
@@ -263,3 +265,45 @@ def process_csv(file_path):
     #df_cleaned.to_csv( cleaned_csv_path, index=False)
     insert_data_to_db(df_cleaned)
     
+
+
+def who_is_in_leave():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    query = """
+    SELECT 
+    l.emp_number, 
+    lt.name AS leave_type
+FROM 
+    ohrm_leave l
+JOIN 
+    ohrm_leave_type lt ON l.leave_type_id = lt.id
+WHERE 
+    l.date = CURDATE();
+
+    """
+    cursor.execute(query)
+    result = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    if not result:
+        st.write("No employees are on leave today.")
+        return pd.DataFrame(columns=["emp_number", "emp_name","leave_type"])
+    
+    # Load employee mapping from JSON
+    mapping_file = resource_path('data/mapping.json')
+    with open(mapping_file, 'r') as f:
+        staff_mapping = json.load(f)
+
+    # Create emp_number -> full_name mapping
+    emp_number_to_name = {
+        details["employee_number"]: details["full_name"]
+        for details in staff_mapping.values()
+    }
+
+    # Create DataFrame and add name column
+    df = pd.DataFrame(result, columns=["emp_number","leave_type"])
+    df["emp_name"] = df["emp_number"].map(emp_number_to_name)
+    df = df[["emp_number", "emp_name", "leave_type"]]
+    return df

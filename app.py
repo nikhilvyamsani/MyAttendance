@@ -146,40 +146,18 @@ with st.sidebar:
     selected_date = st.date_input("Select a date", value=date.today())
     fetch = st.button("Fetch Records")
 
-# --- Main Area ---
-if 'fetch' in locals() and fetch:
-    date_str = selected_date.strftime("%Y-%m-%d")
-    df = extract_records(date_str)
-    if not df.empty:
-        st.success(f"Showing attendance records for {date_str}")
-        st.dataframe(df)
+    st.markdown("---")
+    st.header("🌴 Who's on Leave Today")
 
-        #print(df.head(5))
-
-        # Download button for the attendance records CSV
-        csv = df.to_csv(index=False).encode('utf-8')
+    leave_df = backend.who_is_in_leave()
+    if not leave_df.empty:
+        st.dataframe(leave_df)
+        csv_leave = leave_df.to_csv(index=False).encode("utf-8")
         st.download_button(
-            label="📥 Download as CSV",
-            data=csv,
-            file_name=f"attendance_{date_str}.csv",
+            label="📥 Download Leave List",
+            data=csv_leave,
+            file_name=f"leave_list_{date.today().isoformat()}.csv",
             mime="text/csv"
         )
-        mapping_file = resource_path('data/mapping.json')
-
-        # Check for employees who did not punch in
-        missing_df = check_for_punch_in(df, mapping_file)
-
-        if not missing_df.empty:
-            st.warning(f"Employees who didn't punch in on {date_str}")
-            st.dataframe(missing_df)
-            csv = df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="📥 Download as CSV",
-                data=csv,
-                file_name=f"Not_punched_in_attendance_{date_str}.csv",
-                mime="text/csv"
-            )
-        else:
-            st.success("All employees punched in on this date.")
     else:
-        st.warning(f"No attendance records found for {date_str}")
+        st.success("No one is on leave today.")
